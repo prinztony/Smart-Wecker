@@ -1,7 +1,7 @@
 /* Service Worker für Dämmerung: Die App startet damit auch ohne Internet,
    etwa im Schlafzimmer mit schlechtem Empfang. Bei jeder Änderung an den
    Dateien unten VERSION erhöhen, damit Handys die neue Fassung laden. */
-const VERSION = 'daemmerung-v1';
+const VERSION = 'daemmerung-v2';
 const SHELL = [
   './',
   './manifest.webmanifest',

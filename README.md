@@ -13,7 +13,9 @@ Ein smarter Wecker als Web-App. Er weckt dich nicht stur zu einer Uhrzeit, sonde
 
 - **Weckfenster:** Späteste Weckzeit einstellen, dazu ein Fenster von 10 bis 45 Minuten. Sobald du darin leicht schläfst, klingelt der Wecker, spätestens aber zur eingestellten Zeit.
 - **Messung:** Das Mikrofon hört Rascheln und Umdrehen, der Bewegungssensor spürt die Matratze. Daraus entsteht jede Minute ein Unruhe-Wert.
-- **Sanftes Wecken:** Drei Wecktöne (Klangschale, Harfe, Morgenrot), die langsam lauter werden. Dazu geht auf dem Display eine Sonne auf. Schlummern geht per Tipp, zum Aufstehen den Knopf gedrückt halten.
+- **Sanftes Wecken:** Acht Wecktöne (Klangschale, Harfe, Morgenrot, Vögel, Spieluhr, Meer, Windspiel, Piepton) oder ein eigener Ton als Audiodatei. Der Ton wird langsam lauter, dazu geht auf dem Display eine Sonne auf. Schlummern geht per Tipp oder mit der Seitentaste, zum Aufstehen den Knopf gedrückt halten.
+- **Nachtanzeige:** Wahlweise eine gedimmte Uhr oder ganz schwarz wie ein Bildschirmschoner. Auf OLED-Displays leuchtet dann kein Pixel.
+- **Gesperrt weiterlaufen (Beta):** Eine fast lautlose Tonspur hält die App wie einen Musikplayer offen. Lässt das Handy das zu, klingelt der Wecker auch bei gesperrtem Bildschirm, und auf dem Sperrbildschirm lässt er sich mit Pause schlummern.
 - **Morgenbericht:** Schlafkurve, Anteile von Wach, Leicht und Tief, Schlafqualität, Einschlafdauer und ein Verlauf über 14 Nächte.
 - **Extras:** Testlauf von 2 Minuten, Beispielnacht, Vorschläge für Schlafenszeiten nach 90-Minuten-Zyklen, Wiederaufnahme nach einem Abbruch, Export der Daten als JSON.
 - **Als App installierbar:** Eigenes Symbol, Vollbild ohne Browserleiste, startet auch ohne Internet.
@@ -37,14 +39,15 @@ Als Tiefschlaf zählt nur eine längere Phase fast ohne Bewegung (rund 15 Minute
 
 ## Grenzen
 
-- **Seite muss offen bleiben.** Der Bildschirm bleibt nachts an (stark abgedunkelt). Sperrst du das Handy oder wechselst die App, pausiert der Browser Mikrofon und Uhr, und der Wecker kann nicht klingeln.
-- **iPhone:** Stummschalter aus. Ab iOS 18.4 hält die installierte App den Bildschirm zuverlässig wach. Die installierte App hat einen eigenen Speicher, getrennt von Safari.
+- **Leichtschlaf-Erkennung nur bei offener App.** Wird das Handy gesperrt, schaltet das System Mikrofon und Bewegungssensor ab. Mit „Gesperrt weiterlaufen“ klingelt der Wecker dann im besten Fall noch zur festen Weckzeit. Ob das auf einem Handy klappt, zeigt der Testlauf mit gesperrtem Bildschirm.
+- **Medienlautstärke statt Klingelton:** Web-Apps können nur die Medienlautstärke nutzen. Den Kanal für Klingel- und Weckertöne dürfen nur Apps aus dem App Store bzw. Play Store verwenden.
+- **iPhone:** Ab iOS 18.4 hält die installierte App den Bildschirm zuverlässig wach. Die installierte App hat einen eigenen Speicher, getrennt von Safari.
 - **HTTPS nötig:** Mikrofon und Bewegungssensor funktionieren nur über eine sichere Adresse, nicht beim direkten Öffnen der Datei.
 - **Kein Medizinprodukt:** Die Schlafphasen sind eine Schätzung aus Bewegung. Ein Schlaflabor misst Hirnströme und ist viel genauer.
 
 ## Datenschutz
 
-Es wird nichts aufgenommen und nichts hochgeladen. Pro Minute speichert die App nur zwei Zahlen (wie laut, wie viel Bewegung), und zwar nur im Browser auf dem eigenen Gerät.
+Es wird nichts aufgenommen und nichts hochgeladen. Pro Minute speichert die App nur zwei Zahlen (wie laut, wie viel Bewegung), und zwar nur im Browser auf dem eigenen Gerät. Ein eigener Weckton bleibt ebenfalls nur im Browser gespeichert.
 
 ## GitHub Pages einschalten
 
