@@ -145,6 +145,14 @@ button{font:inherit;color:inherit;cursor:pointer}
 .seg{display:flex;gap:6px;flex-wrap:wrap}
 .seg button{flex:1 1 0;min-width:50px;padding:9px 6px;border-radius:12px;background:var(--night-3);color:var(--muted);border:1px solid transparent;font-weight:700;font-size:14px;white-space:nowrap}
 .seg button[aria-checked="true"]{background:var(--dawn-tint);color:var(--dawn);border-color:var(--dawn-edge)}
+.seg.tones{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+.seg.tones button{min-width:0;white-space:normal;line-height:1.2;padding:10px 4px}
+.row-hint{margin:0;font-size:13px;color:var(--muted)}
+.row-hint b{color:var(--text)}
+.row-hint:empty{display:none}
+.own{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 10px 9px 12px;border-radius:12px;background:var(--night-3)}
+.own-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;color:var(--muted)}
+.own .btn-small{flex:none}
 .play{flex:none;display:inline-flex;align-items:center;gap:6px;padding:6px 12px 6px 9px;border-radius:99px;border:1px solid var(--line);background:var(--night-3);color:var(--dawn);font-weight:800;font-size:13px}
 .play svg{width:15px;height:15px}
 .play.on{background:var(--dawn-tint);border-color:var(--dawn-edge)}
@@ -158,6 +166,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 
 .trial{margin-top:26px;padding:16px;border-radius:20px;border:1px dashed var(--line)}
 .trial p{margin:6px 0 12px;font-size:14px;color:var(--muted)}
+.trial p b{color:var(--text)}
 
 /* Seiten */
 .page-title{margin:20px 0 4px;font:600 26px/1.2 var(--f-display);text-wrap:balance}
@@ -281,6 +290,8 @@ button{font:inherit;color:inherit;cursor:pointer}
 .sleep-line{margin:12px 0 0;font-size:15px;opacity:.3;transition:opacity .8s;font-variant-numeric:tabular-nums}
 .sleep.awake .sleep-clock{opacity:.8}
 .sleep.awake .sleep-line{opacity:.75}
+/* Bildschirmschoner: alles schwarz. Auf OLED-Displays sind schwarze Pixel aus, es leuchtet also nichts. */
+.sleep.black:not(.awake) .sleep-clock,.sleep.black:not(.awake) .sleep-line{opacity:0;transition:opacity 2.5s}
 .sleep-ui{display:grid;gap:14px;justify-items:center;opacity:0;pointer-events:none;transition:opacity .8s}
 .sleep.awake .sleep-ui{opacity:1;pointer-events:auto}
 .sensor-row{display:flex;gap:18px;font-size:13px;color:var(--muted)}
@@ -375,15 +386,28 @@ button{font:inherit;color:inherit;cursor:pointer}
         </div>
         <div class="row">
           <div class="row-head"><span class="row-label" id="lbl-sound">Weckton</span><button type="button" class="play" id="btnPreview"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor"/></svg><span id="previewLabel">Probehören</span></button></div>
-          <div class="seg" role="radiogroup" aria-labelledby="lbl-sound" data-key="sound">
+          <div class="seg tones" role="radiogroup" aria-labelledby="lbl-sound" data-key="sound">
             <button type="button" role="radio" data-val="schale">Klangschale</button>
             <button type="button" role="radio" data-val="harfe">Harfe</button>
             <button type="button" role="radio" data-val="sonne">Morgenrot</button>
+            <button type="button" role="radio" data-val="voegel">Vögel</button>
+            <button type="button" role="radio" data-val="spieluhr">Spieluhr</button>
+            <button type="button" role="radio" data-val="meer">Meer</button>
+            <button type="button" role="radio" data-val="windspiel">Windspiel</button>
+            <button type="button" role="radio" data-val="klassisch">Piepton</button>
+            <button type="button" role="radio" data-val="eigener">Eigener Ton</button>
           </div>
+          <p class="row-hint" id="toneHint"></p>
+          <div class="own" id="ownRow" hidden>
+            <span class="own-name" id="ownName"></span>
+            <button type="button" class="btn-small" id="ownPick">Datei wählen</button>
+          </div>
+          <input type="file" id="ownFile" accept="audio/*,.mp3,.m4a,.aac,.wav,.ogg" hidden>
         </div>
         <div class="row">
           <div class="row-head"><label class="row-label" for="vol">Lautstärke</label><span class="row-val" id="valVol"></span></div>
           <input class="range" type="range" id="vol" min="0.2" max="1" step="0.05">
+          <p class="row-hint">Der Wecker nutzt die <b>Medienlautstärke</b>. Stell sie beim Probehören mit den Lautstärketasten ein, dann passt sie auch morgens.</p>
         </div>
         <div class="row">
           <div class="row-head"><span class="row-label" id="lbl-ramp">Lauter werden über</span></div>
@@ -403,6 +427,18 @@ button{font:inherit;color:inherit;cursor:pointer}
             <button type="button" role="radio" data-val="15">15 Min</button>
           </div>
         </div>
+        <div class="row">
+          <div class="row-head"><span class="row-label" id="lbl-display">Nachts auf dem Display</span></div>
+          <div class="seg" role="radiogroup" aria-labelledby="lbl-display" data-key="display">
+            <button type="button" role="radio" data-val="dim">Uhr gedimmt</button>
+            <button type="button" role="radio" data-val="schwarz">Ganz schwarz</button>
+          </div>
+          <p class="row-hint" id="displayHint"></p>
+        </div>
+        <div class="row switch-row">
+          <div><span class="row-label" id="lbl-bg">Gesperrt weiterlaufen <span class="badge">Beta</span></span><p>Hält eine fast lautlose Tonspur offen, damit der Wecker auch bei gesperrtem Handy klingeln kann. Ob dein Handy das zulässt, zeigt der Testlauf.</p></div>
+          <button type="button" class="switch" role="switch" data-key="background" aria-labelledby="lbl-bg"></button>
+        </div>
         <div class="row switch-row">
           <div><span class="row-label" id="lbl-mic">Mikrofon</span><p>Hört Rascheln und Umdrehen. Es wird nichts aufgenommen.</p></div>
           <button type="button" class="switch" role="switch" data-key="mic" aria-labelledby="lbl-mic"></button>
@@ -416,6 +452,7 @@ button{font:inherit;color:inherit;cursor:pointer}
       <section class="trial" aria-labelledby="h-trial">
         <h2 class="sec-title" id="h-trial">Vorher ausprobieren</h2>
         <p>Der Testlauf dauert zwei Minuten. Nach einer Minute öffnet sich das Weckfenster: Bewege dann das Handy oder raschle daneben, und der Wecker sollte klingeln.</p>
+        <p><b>Gesperrt testen:</b> Testlauf starten, sofort das Handy sperren und zwei Minuten warten. Klingelt es, funktioniert „Gesperrt weiterlaufen“ auf deinem Handy.</p>
         <button type="button" class="btn-ghost" id="btnTest">Testlauf starten</button>
       </section>
     </section>
@@ -442,10 +479,11 @@ button{font:inherit;color:inherit;cursor:pointer}
       <div class="info-block">
         <h2 class="sec-title">Damit es zuverlässig klappt</h2>
         <ul class="checks">
-          <li><b>Ladekabel anschließen.</b> Der Bildschirm bleibt die ganze Nacht an, stark abgedunkelt.</li>
-          <li><b>Seite offen lassen.</b> Nicht sperren und nicht in eine andere App wechseln. Sonst hält der Browser Mikrofon und Uhr an, und der Wecker kann nicht klingeln.</li>
+          <li><b>Ladekabel anschließen.</b> Der Bildschirm bleibt an, mit „Ganz schwarz“ leuchtet er aber nicht.</li>
+          <li><b>Am besten offen lassen.</b> Nur bei offener App erkennt der Wecker den Leichtschlaf. Wird das Handy gesperrt, schaltet das System Mikrofon und Bewegungssensor ab. Mit „Gesperrt weiterlaufen“ klingelt er dann im besten Fall noch zur festen Weckzeit. Ob dein Handy das zulässt, zeigt der Testlauf.</li>
           <li><b>Richtig hinlegen.</b> Für den Bewegungssensor neben das Kopfkissen auf die Matratze, Display nach oben. Nur mit Mikrofon reicht der Nachttisch.</li>
-          <li><b>iPhone:</b> Stummschalter aus, Lautstärke hoch.</li>
+          <li><b>Lautstärke:</b> Der Wecker nutzt die Medienlautstärke, nicht die Klingeltonlautstärke. Stell sie beim Probehören mit den Lautstärketasten ein. Normalerweise ist er auch im Lautlos-Modus zu hören, prüf das einmal beim Testlauf.</li>
+          <li><b>Seitentaste beim Klingeln</b> heißt Schlummern, genau wie beim iPhone-Wecker. Auf dem Sperrbildschirm kannst du ebenfalls mit Pause schlummern.</li>
           <li><b>Einmal testen.</b> Mach den Testlauf, bevor du dich auf den Wecker verlässt.</li>
         </ul>
       </div>
@@ -526,12 +564,14 @@ const store = {
 };
 const KEY = { settings: 'daemmerung-einstellungen', nights: 'daemmerung-naechte', active: 'daemmerung-laufend' };
 
-const DEFAULTS = { time: '06:30', window: 30, sound: 'schale', volume: 0.8, ramp: 120, snooze: 9, mic: true, motion: true };
+const DEFAULTS = { time: '06:30', window: 30, sound: 'schale', volume: 0.8, ramp: 120, snooze: 9, mic: true, motion: true, display: 'schwarz', background: true };
 const settings = Object.assign({}, DEFAULTS);
 (() => {
   const s = store.get(KEY.settings, {});
   if (s && typeof s === 'object') for (const k of Object.keys(DEFAULTS)) if (typeof s[k] === typeof DEFAULTS[k]) settings[k] = s[k];
   if (!/^\d\d:\d\d$/.test(settings.time)) settings.time = DEFAULTS.time;
+  if (!['schale', 'harfe', 'sonne', 'voegel', 'spieluhr', 'meer', 'windspiel', 'klassisch', 'eigener'].includes(settings.sound)) settings.sound = DEFAULTS.sound;
+  if (!['dim', 'schwarz'].includes(settings.display)) settings.display = DEFAULTS.display;
 })();
 const saveSettings = () => store.set(KEY.settings, settings);
 
@@ -735,6 +775,7 @@ function sampleNight() {
 const NOTE = k => 440 * Math.pow(2, (k - 69) / 12);
 function tone(ctx, out, o) {
   const { f, t, type = 'sine', a = 0.01, d = 2, g = 0.2 } = o;
+  if (f >= ctx.sampleRate * 0.45) return; /* zu hoch für diese Abtastrate */
   const osc = ctx.createOscillator(); osc.type = type; osc.frequency.value = f;
   const env = ctx.createGain();
   env.gain.setValueAtTime(0.0001, t);
@@ -784,8 +825,160 @@ const VOICES = {
       tone(ctx, out, { f: NOTE(ch[4] + 12), t: t + att, a: 0.01, d: 3.5, g: 0.06 });
       return 6;
     }
+  },
+  voegel: {
+    step(ctx, out, t, i) {
+      const kind = Math.floor(hr(i, 1) * 4);
+      let dt = 0;
+      if (kind === 0) {
+        /* absteigender Pfiff */
+        const n = 3 + Math.floor(hr(i, 2) * 3), f = 2800 + hr(i, 3) * 900;
+        for (let k = 0; k < n; k++) { chirp(ctx, out, t + dt, f * 1.25, f * 0.82, 0.13, 0.18); dt += 0.2; }
+      } else if (kind === 1) {
+        /* Triller */
+        const n = 8 + Math.floor(hr(i, 4) * 8), f = 4200 + hr(i, 5) * 800;
+        for (let k = 0; k < n; k++) { chirp(ctx, out, t + dt, f, f * 1.12, 0.035, 0.12); dt += 0.055; }
+      } else if (kind === 2) {
+        /* Zweiton-Ruf */
+        const f = 2300 + hr(i, 6) * 500;
+        chirp(ctx, out, t, f, f * 1.05, 0.22, 0.2); chirp(ctx, out, t + 0.3, f * 1.33, f * 1.28, 0.28, 0.2); dt = 0.6;
+        if (hr(i, 7) > 0.5) { chirp(ctx, out, t + 0.75, f, f * 1.05, 0.22, 0.18); chirp(ctx, out, t + 1.05, f * 1.33, f * 1.28, 0.28, 0.18); dt = 1.35; }
+      } else {
+        /* aufsteigendes Zwitschern */
+        const n = 4 + Math.floor(hr(i, 8) * 4), f = 3000 + hr(i, 9) * 600;
+        for (let k = 0; k < n; k++) { chirp(ctx, out, t + dt, f * (0.8 + k * 0.06), f * (1.1 + k * 0.06), 0.07, 0.16); dt += 0.11; }
+      }
+      return dt + 0.5 + hr(i, 10) * 1.8;
+    }
+  },
+  spieluhr: {
+    step(ctx, out, t, i) {
+      /* eigene Melodie, vier Phrasen in C-Dur, danach eine Pause */
+      const tune = [84, 88, 91, 88, 86, 84, 81, 84, 83, 86, 89, 86, 84, 83, 79, 83, 81, 84, 88, 86, 84, 81, 79, 81, 79, 83, 86, 84, 83, 79, 77, 76];
+      const k = i % (tune.length + 1);
+      if (k === tune.length) return 1.4;
+      const f = NOTE(tune[k]);
+      for (const [r, g, d] of [[1, 0.16, 1.8], [3, 0.025, 0.5], [5.4, 0.015, 0.25]]) tone(ctx, out, { f: f * r, t, a: 0.003, d, g });
+      return k % 8 === 7 ? 0.64 : 0.32;
+    }
+  },
+  meer: {
+    step(ctx, out, t, i) {
+      /* eine Welle: gefiltertes Rauschen schwillt an und ab */
+      const src = ctx.createBufferSource(); src.buffer = noiseBuffer(ctx); src.loop = true;
+      const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.Q.value = 0.5;
+      lp.frequency.setValueAtTime(300, t); lp.frequency.linearRampToValueAtTime(1300 + hr(i, 1) * 600, t + 3.2); lp.frequency.linearRampToValueAtTime(350, t + 9);
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.32, t + 3.2); g.gain.linearRampToValueAtTime(0.12, t + 5.5); g.gain.linearRampToValueAtTime(0.0001, t + 9);
+      src.connect(lp); lp.connect(g); g.connect(out);
+      src.start(t, hr(i, 2) * 1.5); src.stop(t + 9.1);
+      if (i % 2 === 0) {
+        const f = NOTE([76, 79, 81, 84][(i / 2) % 4]);
+        tone(ctx, out, { f, t: t + 3, a: 0.01, d: 4, g: 0.08 });
+        tone(ctx, out, { f: f * 2.76, t: t + 3, a: 0.01, d: 1.6, g: 0.02 });
+      }
+      return 6.5;
+    }
+  },
+  windspiel: {
+    step(ctx, out, t, i) {
+      const notes = [84, 86, 88, 91, 93, 96, 98];
+      const n = 2 + Math.floor(hr(i, 1) * 3);
+      let dt = 0;
+      for (let k = 0; k < n; k++) {
+        const f = NOTE(notes[Math.floor(hr(i, 10 + k) * notes.length)]), g = 0.06 + hr(i, 20 + k) * 0.05;
+        for (const [r, gg, d] of [[1, 1, 4.5], [2.76, 0.35, 2.2], [5.4, 0.18, 1.1]]) tone(ctx, out, { f: f * r, t: t + dt, a: 0.004, d, g: g * gg });
+        dt += 0.12 + hr(i, 30 + k) * 0.45;
+      }
+      return dt + 0.6 + hr(i, 2) * 2;
+    }
+  },
+  klassisch: {
+    step(ctx, out, t) {
+      for (let k = 0; k < 4; k++) {
+        const s = t + k * 0.16;
+        const o = ctx.createOscillator(); o.type = 'square'; o.frequency.value = 2048;
+        const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 4500;
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.0001, s); g.gain.linearRampToValueAtTime(0.12, s + 0.006); g.gain.setValueAtTime(0.12, s + 0.085); g.gain.linearRampToValueAtTime(0.0001, s + 0.095);
+        o.connect(lp); lp.connect(g); g.connect(out); o.start(s); o.stop(s + 0.11);
+      }
+      return 1.15;
+    }
   }
 };
+const TONES = {
+  schale: 'Tiefe Klangschalen, sehr ruhig.',
+  harfe: 'Helle Harfen-Melodie.',
+  sonne: 'Warme Akkorde, die langsam aufblühen.',
+  voegel: 'Zwitschernde Vögel am Morgen.',
+  spieluhr: 'Zarte Spieluhr-Melodie.',
+  meer: 'Meeresrauschen mit leiser Glocke.',
+  windspiel: 'Klingendes Windspiel.',
+  klassisch: 'Klassisches Weckerpiepen, für Tiefschläfer.',
+  eigener: 'Eine Audiodatei von deinem Handy, zum Beispiel ein Lied als MP3 oder M4A.'
+};
+/* gleichbleibender Zufall, damit sich jeder Durchlauf etwas anders anhört */
+function hr(i, k) { const x = Math.sin(i * 127.1 + k * 311.7) * 43758.5453; return x - Math.floor(x); }
+function chirp(ctx, out, t, f0, f1, d, g) {
+  const o = ctx.createOscillator(); o.type = 'sine';
+  o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f1, t + d);
+  const e = ctx.createGain();
+  e.gain.setValueAtTime(0.0001, t); e.gain.exponentialRampToValueAtTime(g, t + 0.012); e.gain.exponentialRampToValueAtTime(0.0001, t + d);
+  o.connect(e); e.connect(out); o.start(t); o.stop(t + d + 0.02);
+}
+const noiseCache = new WeakMap();
+function noiseBuffer(ctx) {
+  let b = noiseCache.get(ctx);
+  if (b) return b;
+  const n = ctx.sampleRate * 2;
+  b = ctx.createBuffer(1, n, ctx.sampleRate);
+  const d = b.getChannelData(0);
+  let last = 0;
+  for (let k = 0; k < n; k++) { last = (last + 0.02 * (Math.random() * 2 - 1)) / 1.02; d[k] = last * 3.5; }
+  noiseCache.set(ctx, b);
+  return b;
+}
+
+/* Eigener Ton: wird im Browser auf dem Gerät gespeichert (IndexedDB), nie hochgeladen */
+const OwnTone = {
+  cache: null,
+  open() {
+    return new Promise((res, rej) => {
+      if (!window.indexedDB) { rej(new Error('kein Speicher')); return; }
+      const r = indexedDB.open('daemmerung', 1);
+      r.onupgradeneeded = () => r.result.createObjectStore('toene');
+      r.onsuccess = () => res(r.result);
+      r.onerror = () => rej(r.error);
+    });
+  },
+  async load() {
+    if (this.cache) return this.cache;
+    try {
+      const db = await this.open();
+      const rec = await new Promise((res, rej) => { const q = db.transaction('toene').objectStore('toene').get('eigener'); q.onsuccess = () => res(q.result || null); q.onerror = () => rej(q.error); });
+      if (rec && rec.data) this.cache = { name: rec.name, type: rec.type, data: rec.data, url: URL.createObjectURL(new Blob([rec.data], { type: rec.type })) };
+    } catch (e) {}
+    return this.cache;
+  },
+  async save(name, type, data) {
+    const db = await this.open();
+    await new Promise((res, rej) => { const tx = db.transaction('toene', 'readwrite'); tx.objectStore('toene').put({ name, type, data }, 'eigener'); tx.oncomplete = res; tx.onerror = () => rej(tx.error); });
+    if (this.cache && this.cache.url) URL.revokeObjectURL(this.cache.url);
+    this.cache = { name, type, data, url: URL.createObjectURL(new Blob([data], { type })) };
+  },
+  async buffer(ctx) {
+    const c = await this.load();
+    if (!c) return null;
+    if (c.buffer && c.ctx === ctx) return c.buffer;
+    c.buffer = await decodeAudio(ctx, c.data.slice(0));
+    c.ctx = ctx;
+    return c.buffer;
+  }
+};
+function decodeAudio(ctx, data) {
+  return new Promise((res, rej) => { const p = ctx.decodeAudioData(data, res, rej); if (p && p.then) p.then(res, rej); });
+}
 function runPattern(ctx, out, kind) {
   const v = VOICES[kind] || VOICES.schale;
   let i = 0, t = ctx.currentTime + 0.08;
@@ -808,7 +1001,8 @@ function encodeWav(data, sr) {
 }
 
 const Sound = {
-  ctx: null, out: null, keep: null, bus: null, stopPattern: null, el: null, silentURL: null, altURL: null, altKind: null,
+  ctx: null, out: null, keep: null, bus: null, stopPattern: null, el: null, silentURL: null, quietURL: null,
+  altURL: null, altKind: null, altOwned: false, keeping: false,
   token: 0, mode: null, previewTimer: 0,
   ensure() {
     if (!this.ctx) {
@@ -831,8 +1025,9 @@ const Sound = {
     }
     return this.el;
   },
-  /* Muss direkt im Klick laufen: hält den Audio-Kontext die Nacht über wach und gibt das Ersatz-Audio frei. */
-  unlock() {
+  /* Muss direkt im Klick laufen: hält den Audio-Kontext die Nacht über wach und gibt das Ersatz-Audio frei.
+     Mit keep läuft danach die fast lautlose Tonspur weiter (für „Gesperrt weiterlaufen“). */
+  unlock(keep) {
     const ctx = this.ensure();
     if (ctx && !this.keep) {
       try {
@@ -841,12 +1036,37 @@ const Sound = {
         this.keep = s;
       } catch (e) {}
     }
+    if (keep) { this.keepAlive(true); return; }
     const el = this.element();
     try { el.src = this.silentURL; const p = el.play(); if (p && p.then) p.then(() => el.pause()).catch(() => {}); } catch (e) {}
   },
-  /* Ersatz, falls der Audio-Kontext morgens nicht mehr läuft: der Weckton als fertige Datei */
-  async renderAlt(kind) {
+  /* Fast lautlose Tonspur (etwa −78 dB). Solange sie spielt, behandelt das Handy die App wie einen Musikplayer. */
+  keepAlive(on) {
+    const el = this.element();
+    if (on) {
+      if (this.mode === 'el') return;
+      if (!this.quietURL) {
+        const n = 22050 * 2, d = new Float32Array(n);
+        for (let k = 0; k < n; k++) d[k] = (Math.random() * 2 - 1) * 0.00012;
+        this.quietURL = URL.createObjectURL(encodeWav(d, 22050));
+      }
+      if (el.src !== this.quietURL) el.src = this.quietURL;
+      el.loop = true; el.volume = 1;
+      try { const p = el.play(); if (p && p.catch) p.catch(() => {}); } catch (e) {}
+      this.keeping = true;
+    } else {
+      if (this.keeping && this.mode !== 'el') { try { el.pause(); } catch (e) {} }
+      this.keeping = false;
+    }
+  },
+  setAlt(url, owned, kind) {
+    if (this.altURL && this.altOwned) URL.revokeObjectURL(this.altURL);
+    this.altURL = url; this.altOwned = owned; this.altKind = kind;
+  },
+  /* Ersatz, falls der Audio-Kontext nicht läuft (etwa bei gesperrtem Handy): der Weckton als fertige Datei */
+  async renderAlt(kind, vol = 1) {
     try {
+      if (kind === 'eigener') { const c = await OwnTone.load(); if (c) { this.setAlt(c.url, false, kind); return; } kind = 'schale'; }
       const OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
       if (!OAC) return;
       const sr = 22050, dur = 30, oc = new OAC(1, sr * dur, sr);
@@ -857,11 +1077,9 @@ const Sound = {
       const buf = await new Promise(res => { const p = oc.startRendering(); if (p && p.then) p.then(res); else oc.oncomplete = e => res(e.renderedBuffer); });
       const d = buf.getChannelData(0);
       let peak = 0; for (let k = 0; k < d.length; k++) peak = Math.max(peak, Math.abs(d[k]));
-      const gain = peak > 0 ? 0.9 / peak : 1, fade = sr * 1.5, out = new Float32Array(d.length);
+      const gain = peak > 0 ? 0.9 * clamp(vol, 0.2, 1) / peak : 1, fade = sr * 1.5, out = new Float32Array(d.length);
       for (let k = 0; k < d.length; k++) out[k] = d[k] * gain * (k > d.length - fade ? (d.length - k) / fade : 1);
-      if (this.altURL) URL.revokeObjectURL(this.altURL);
-      this.altURL = URL.createObjectURL(encodeWav(out, sr));
-      this.altKind = kind;
+      this.setAlt(URL.createObjectURL(encodeWav(out, sr)), true, kind);
     } catch (e) {}
   },
   async start(kind, vol, ramp) {
@@ -869,26 +1087,36 @@ const Sound = {
     this.halt();
     try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) {}
     const ctx = this.ensure();
-    if (ctx) { try { await Promise.race([ctx.resume(), wait(700)]); } catch (e) {} }
+    const visible = document.visibilityState === 'visible';
+    if (ctx && visible) { try { await Promise.race([ctx.resume(), wait(700)]); } catch (e) {} }
     if (my !== this.token) return;
-    if (ctx && ctx.state === 'running') {
+    if (ctx && ctx.state === 'running' && visible) {
+      let own = null;
+      if (kind === 'eigener') { try { own = await OwnTone.buffer(ctx); } catch (e) { own = null; } if (my !== this.token) return; }
+      this.keepAlive(false);
       const bus = ctx.createGain(); bus.connect(this.out);
       const t = ctx.currentTime;
       bus.gain.setValueAtTime(0.0001, t);
       bus.gain.exponentialRampToValueAtTime(Math.max(0.002, vol), t + Math.max(0.5, ramp));
       this.bus = bus;
-      this.stopPattern = runPattern(ctx, bus, kind);
+      if (own) {
+        const s = ctx.createBufferSource(); s.buffer = own; s.loop = true; s.connect(bus); s.start();
+        this.stopPattern = () => { try { s.stop(); } catch (e) {} };
+      } else {
+        this.stopPattern = runPattern(ctx, bus, kind === 'eigener' ? 'schale' : kind);
+      }
       this.mode = 'ctx';
     } else {
-      if (this.altKind !== kind || !this.altURL) await this.renderAlt(kind);
+      /* Hintergrund oder pausierter Audio-Kontext: über das Audio-Element wecken, das schon die ganze Nacht läuft */
+      if (this.altKind !== kind || !this.altURL) await this.renderAlt(kind, vol);
       if (my !== this.token || !this.altURL) return;
       const el = this.element();
       el.src = this.altURL; el.loop = true; el.volume = vol;
       el.play().catch(() => {});
-      this.mode = 'el';
+      this.mode = 'el'; this.keeping = false;
     }
   },
-  halt() {
+  halt(keep) {
     if (this.stopPattern) { this.stopPattern(); this.stopPattern = null; }
     if (this.bus && this.ctx) {
       const b = this.bus, t = this.ctx.currentTime;
@@ -896,16 +1124,22 @@ const Sound = {
       setTimeout(() => { try { b.disconnect(); } catch (e) {} }, 600);
       this.bus = null;
     }
-    if (this.el && this.mode === 'el') { try { this.el.pause(); } catch (e) {} }
+    if (this.el && this.mode === 'el') {
+      this.mode = null;
+      /* Beim Schlummern nicht anhalten, sondern zurück auf die lautlose Spur: so bleibt die App im Hintergrund wach */
+      if (keep) { this.keepAlive(true); return; }
+      try { this.el.pause(); } catch (e) {}
+    }
     this.mode = null;
+    if (keep) this.keepAlive(true);
   },
-  stop() { this.token++; this.halt(); clearTimeout(this.previewTimer); this.previewTimer = 0; $('#btnPreview').classList.remove('on'); $('#previewLabel').textContent = 'Probehören'; },
+  stop(keep) { this.token++; this.halt(keep); clearTimeout(this.previewTimer); this.previewTimer = 0; $('#btnPreview').classList.remove('on'); $('#previewLabel').textContent = 'Probehören'; },
   preview(kind, vol) {
     this.start(kind, vol * 0.8, 1.2);
     clearTimeout(this.previewTimer);
     $('#btnPreview').classList.add('on');
     $('#previewLabel').textContent = 'Stopp';
-    this.previewTimer = setTimeout(() => this.stop(), 7000);
+    this.previewTimer = setTimeout(() => this.stop(), kind === 'eigener' ? 12000 : 7000);
   }
 };
 
@@ -1048,6 +1282,39 @@ async function lockScreen() {
   return false;
 }
 function unlockScreen() { try { wakeLock && wakeLock.release(); } catch (e) {} wakeLock = null; }
+/* Anzeige auf dem Sperrbildschirm (wie bei einem Musikplayer), solange die lautlose Tonspur oder der Weckton läuft.
+   Pause oder Weiter tippen heißt beim Klingeln: Schlummern. */
+function mediaSession(state) {
+  const ms = navigator.mediaSession;
+  if (!ms || typeof window.MediaMetadata === 'undefined') return;
+  const handlers = ['play', 'pause', 'stop', 'nexttrack'];
+  try {
+    if (!state || !night) {
+      ms.metadata = null;
+      ms.playbackState = 'none';
+      handlers.forEach(a => { try { ms.setActionHandler(a, null); } catch (e) {} });
+      return;
+    }
+    const winStart = night.target - night.windowMin * MIN;
+    const title = state === 'ring' ? 'Guten Morgen · ' + fmtHM(Date.now())
+      : state === 'snooze' ? 'Schlummern bis ' + fmtHM(snoozeUntil)
+      : 'Wecker ' + fmtHM(night.target);
+    const artist = state === 'ring' ? 'Pause tippen zum Schlummern'
+      : state === 'snooze' ? 'Dämmerung'
+      : night.windowMin ? 'Sanft wecken ab ' + fmtHM(winStart) : 'Dämmerung';
+    ms.metadata = new MediaMetadata({ title, artist, album: 'Dämmerung', artwork: [
+      { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+      { src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png' }
+    ] });
+    ms.playbackState = 'playing';
+    const keepOn = () => { if (settings.background) Sound.keepAlive(true); };
+    const set = (a, fn) => { try { ms.setActionHandler(a, fn); } catch (e) {} };
+    set('play', () => { if (phase === 'sleep' || phase === 'snooze') keepOn(); });
+    set('pause', () => { if (phase === 'ring') snooze(); else if (phase === 'sleep' || phase === 'snooze') keepOn(); });
+    set('nexttrack', () => { if (phase === 'ring') snooze(); });
+    set('stop', () => { if (phase === 'ring' || phase === 'snooze') finish(); });
+  } catch (e) {}
+}
 function enterFullscreen() {
   try {
     const el = document.documentElement, f = el.requestFullscreen || el.webkitRequestFullscreen;
@@ -1088,7 +1355,7 @@ async function startNight(opts = {}) {
   history.pushState({ guard: true }, '', '#nacht');
   Sound.stop();
   /* Alles, was eine Nutzergeste braucht, sofort im Klick anstoßen */
-  Sound.unlock();
+  Sound.unlock(settings.background);
   try { if (navigator.audioSession) navigator.audioSession.type = 'auto'; } catch (e) {}
   const motionP = settings.motion ? Sensors.startMotion() : Promise.resolve(false);
   const micP = settings.mic ? Sensors.startMic(Sound.ctx) : Promise.resolve(false);
@@ -1113,11 +1380,12 @@ async function startNight(opts = {}) {
   }
   hiddenWhileSleeping = false;
   Sensors.reset();
-  Sound.renderAlt(settings.sound);
+  Sound.renderAlt(settings.sound, settings.volume);
   phase = 'sleep';
   wakeLockOK = await lockScreen();
   persist();
   showSleep();
+  mediaSession('sleep');
   tick();
   setTimeout(updateSleepUI, 4000);
 }
@@ -1137,16 +1405,18 @@ function ring(reason) {
   showRing(reason, ramp);
   Sound.start(settings.sound, settings.volume, ramp);
   startVibration(Math.min(30, ramp / 2));
+  mediaSession('ring');
 }
 function snooze() {
   if (phase !== 'ring') return;
-  Sound.stop(); stopVibration();
+  Sound.stop(settings.background); stopVibration();
   night.snoozes = (night.snoozes || 0) + 1;
   saveNight(night);
   phase = 'snooze';
   snoozeUntil = Date.now() + settings.snooze * MIN;
   persist();
   showSleep();
+  mediaSession('snooze');
 }
 function finish() {
   const now = Date.now();
@@ -1155,7 +1425,8 @@ function finish() {
     night.wokeAt = now;
     night.wokeReason = 'manuell';
   }
-  Sensors.stop(); Sound.stop(); stopVibration();
+  Sensors.stop(); Sound.stop(); Sound.keepAlive(false); stopVibration();
+  mediaSession(null);
   const n = night;
   night = null; phase = 'idle';
   store.del(KEY.active);
@@ -1198,6 +1469,9 @@ document.addEventListener('visibilitychange', () => {
     hiddenInEpoch = true;
     hiddenWhileSleeping = true;
     persist();
+  } else if (phase === 'ring') {
+    /* Wie beim iPhone-Wecker: Seitentaste drücken heißt Schlummern */
+    snooze();
   }
 });
 window.addEventListener('beforeunload', e => {
@@ -1215,6 +1489,7 @@ function wakeUI() {
 function showSleep() {
   $('#ringScreen').hidden = true;
   $('#sleepScreen').hidden = false;
+  $('#sleepScreen').classList.toggle('black', settings.display === 'schwarz');
   const winStart = night.target - night.windowMin * MIN;
   if (phase === 'snooze') {
     $('#sleepLine').textContent = 'Schlummern bis ' + fmtHM(snoozeUntil);
@@ -1245,10 +1520,11 @@ function updateSleepUI() {
     if (!Sensors.micOn && !Sensors.motionOn) notes.push('Keine Sensoren aktiv. Der Wecker klingelt zur festen Weckzeit.');
     else if (settings.mic && !Sensors.micOn) notes.push(Sensors.micError === 'NotAllowedError' ? 'Mikrofon wurde nicht erlaubt.' : 'Mikrofon ist nicht verfügbar.');
     if (Sensors.motionOn && !Sensors.motionSeen) notes.push('Kein Bewegungssensor gefunden.');
-    if (night.test) notes.push('Ab ' + fmtHM(night.target - MIN) + ' ist das Fenster offen: Dann das Handy bewegen oder rascheln.');
+    if (night.test) notes.push('Ab ' + fmtHM(night.target - MIN) + ' ist das Fenster offen: Dann das Handy bewegen oder rascheln.' + (settings.background ? ' Oder sperr jetzt das Handy, um „Gesperrt weiterlaufen“ zu testen.' : ''));
   }
-  if (wakeLockOK === false) notes.push('Stell die automatische Bildschirmsperre auf „Nie“, sonst kann der Wecker nicht klingeln.');
-  if (hiddenWhileSleeping) notes.push('Die Seite war zwischendurch im Hintergrund. In dieser Zeit wurde nichts gemessen.');
+  if (wakeLockOK === false) notes.push(settings.background ? 'Der Bildschirm kann nicht wach gehalten werden. Klingelt der Testlauf auch gesperrt, ist das kein Problem.' : 'Stell die automatische Bildschirmsperre auf „Nie“, sonst kann der Wecker nicht klingeln.');
+  if (settings.display === 'schwarz' && phase === 'sleep') notes.push('Gleich wird alles schwarz. Tippen zeigt die Uhr.');
+  if (hiddenWhileSleeping) notes.push('Das Handy war zwischendurch gesperrt. In dieser Zeit konnte nicht gemessen werden.');
   $('#sleepNote').textContent = notes.join(' ');
 }
 setInterval(() => {
@@ -1461,6 +1737,14 @@ function renderHome() {
   $('#vol').value = settings.volume;
   $('#valVol').textContent = Math.round(settings.volume * 100) + ' %';
   $('#valWindow').textContent = settings.window ? settings.window + ' Min vor der Weckzeit' : 'aus';
+  const own = OwnTone.cache;
+  $('#toneHint').textContent = settings.sound === 'eigener' ? (own ? '' : TONES.eigener) : TONES[settings.sound];
+  $('#ownRow').hidden = settings.sound !== 'eigener';
+  $('#ownName').textContent = own ? own.name : 'Noch keine Datei gewählt';
+  $('#ownPick').textContent = own ? 'Andere Datei' : 'Datei wählen';
+  $('#displayHint').textContent = settings.display === 'schwarz'
+    ? 'Nach 12 Sekunden wird alles schwarz, Tippen zeigt die Uhr. Auf OLED-Displays leuchtet dann kein einziger Pixel.'
+    : 'Die Uhr bleibt die ganze Nacht schwach sichtbar.';
 }
 let lastHomeRender = 0;
 function updateUntil(now) {
@@ -1483,10 +1767,31 @@ $$('.seg[data-key]').forEach(seg => seg.addEventListener('click', e => {
   const b = e.target.closest('button[data-val]');
   if (!b) return;
   const key = seg.dataset.key;
+  /* Eigener Ton ohne gespeicherte Datei: zuerst eine Datei auswählen lassen */
+  if (key === 'sound' && b.dataset.val === 'eigener' && !OwnTone.cache) { $('#ownFile').click(); return; }
   settings[key] = typeof DEFAULTS[key] === 'number' ? Number(b.dataset.val) : b.dataset.val;
   saveSettings(); renderHome();
   if (key === 'sound' && Sound.previewTimer) Sound.preview(settings.sound, settings.volume);
 }));
+$('#ownPick').addEventListener('click', () => $('#ownFile').click());
+$('#ownFile').addEventListener('change', async e => {
+  const f = e.target.files && e.target.files[0];
+  e.target.value = '';
+  if (!f) return;
+  if (f.size > 15 * 1024 * 1024) { showNote('<b>Die Datei ist zu groß.</b> Bitte höchstens 15 MB, zum Beispiel ein kurzer Ausschnitt eines Liedes.'); return; }
+  let data;
+  try { data = await f.arrayBuffer(); } catch (err) { showNote('<b>Die Datei ließ sich nicht lesen.</b> Probier es mit einer anderen Datei.'); return; }
+  const ctx = Sound.ensure();
+  if (ctx) {
+    try { await decodeAudio(ctx, data.slice(0)); }
+    catch (err) { showNote('<b>Diese Datei kann dein Browser nicht abspielen.</b> Probier MP3, M4A oder WAV.'); return; }
+  }
+  try { await OwnTone.save(f.name, f.type || 'audio/mpeg', data); }
+  catch (err) { showNote('<b>Speichern hat nicht geklappt.</b> Vielleicht ist der Speicher voll, oder du bist in einem privaten Fenster.'); return; }
+  Sound.altKind = null;
+  settings.sound = 'eigener'; saveSettings(); renderHome();
+  Sound.preview('eigener', settings.volume);
+});
 $$('.switch[data-key]').forEach(sw => sw.addEventListener('click', () => {
   settings[sw.dataset.key] = !settings[sw.dataset.key];
   saveSettings(); renderHome();
@@ -1725,6 +2030,7 @@ if ('serviceWorker' in navigator && window.isSecureContext) {
 }
 
 renderHome();
+OwnTone.load().then(() => renderHome());
 renderInstall();
 checkEnvironment();
 checkResume();
@@ -1732,7 +2038,7 @@ if (location.hash) routeFromHash();
 setInterval(tick, 1000);
 
 /* Für Tests in der Konsole */
-window.__daemmerung = { analyze, activity, lightSleepNow, sampleNight };
+window.__daemmerung = { analyze, activity, lightSleepNow, sampleNight, VOICES, Sound, OwnTone, state: () => ({ phase, night, snoozeUntil }) };
 })();
 </script>
 </body>
